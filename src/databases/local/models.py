@@ -1,3 +1,14 @@
 import sqlalchemy
+from sqlalchemy import Column, Integer, DateTime, DECIMAL
 
 from .db import Base
+
+
+class SystemResInfo(Base):
+    __tablename__ = 'system_res_info'
+
+    id = Column(Integer, primary_key=True)
+    collected_at = Column(DateTime, index=True)
+    cpu_percent = Column(DECIMAL(8, 2))
+    memory_used = Column(DECIMAL(16, 2))  # 单位 MB
+    memory_percent = Column(DECIMAL(8, 2))
