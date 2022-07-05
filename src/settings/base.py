@@ -3,6 +3,8 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+
 REMOTE_DATABASE_USER = ''
 REMOTE_DATABASE_PASSWORD = ''
 REMOTE_DATABASE_HOST = ''

@@ -1,10 +1,10 @@
 import sqlalchemy
 from sqlalchemy import Column, Integer, DateTime, DECIMAL
 
-from .db import Base
+from .db import LocalBase
 
 
-class SystemResInfo(Base):
+class SystemResInfo(LocalBase):
     __tablename__ = 'system_res_info'
 
     id = Column(Integer, primary_key=True)
