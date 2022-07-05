@@ -2,11 +2,9 @@ import time
 from datetime import datetime
 
 import psutil
+from loguru import logger
 
-from src.utils.logger import Logger
 from src.databases.local.dao import create_system_res_info
-
-logger = Logger(__file__)
 
 
 def collect_host_machine_info_task():
