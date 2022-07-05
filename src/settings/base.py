@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+SRC_DIR = BASE_DIR.joinpath('src')
+TEMPLATES_DIR = SRC_DIR.joinpath('templates')
+STATIC_DIR = SRC_DIR.joinpath('static')
 
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 

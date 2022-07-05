@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.date_and_time import dt2ts
+from src.utils.date_and_time import dt2ts, str2datetime
 
 
 class DisplayDatetime(datetime):
@@ -15,3 +15,13 @@ class DisplayDatetime(datetime):
     @classmethod
     def validate(cls, v):
         return dt2ts(v)
+
+
+class WithoutTzDatetime(datetime):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        return str2datetime(v)

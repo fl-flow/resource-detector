@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="{{ url_for('static', path='common/js/vue2.6.10.js') }}"></script>
+    <script src="{{ url_for('static', path='common/js/moment2.24.0.js') }}"></script>
+    <script src="{{ url_for('static', path='common/js/antd.min1.7.8.js') }}"></script>
+    <script src="{{ url_for('static', path='common/js/axios.min0.24.0.js') }}"></script>
+    <!--需要下面这个插件来适配驼峰事件： https://github.com/vueComponent/vue-dash-event-->
+    <script src="{{ url_for('static', path='common/js/vue-dash-event.min1.0.1.js') }}"></script>
+    <link href="{{ url_for('static', path='common/css/antd.min1.7.8.css') }}" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+    [[ message ]]
+</div>
+</body>
+<script>
+    Vue.use(window['vue-dash-event'])
+    const vue = new Vue({
+        el: '#app',
+        delimiters: ["[[", "]]"],
+        data() {
+            return {
+                message: 'Jinja2'
+            }
+        },
+        mounted() {
+            this.apiListSystemResInfo()
+        },
+        methods: {
+            apiError(err) {
+                this.$message.error(`api error：${err}`)
+            },
+            apiListSystemResInfo(collected_at_gte, collected_at_lte) {
+                collected_at_gte = collected_at_gte || moment().subtract(1, 'days').format('X')
+                collected_at_lte = collected_at_lte || moment().format('X')
+                axios
+                    .get('/api/system_res_info/', {
+                        params: {
+                            collected_at_gte,
+                            collected_at_lte
+                        }
+                    }).then(res => {
+                }).catch(err => {
+                    this.apiError(err)
+                })
+            }
+        },
+        computed: {}
+    })
+</script>
+</html>

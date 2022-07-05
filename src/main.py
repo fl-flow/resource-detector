@@ -1,6 +1,8 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
-from src.router import api_router
+from src import settings
+from src.router import api_router, view_router
 
 
 def get_application() -> FastAPI:
@@ -14,6 +16,9 @@ def get_application() -> FastAPI:
     )
 
     application.include_router(api_router, prefix='/api')
+    application.include_router(view_router, prefix='/view')
+
+    application.mount('/static', StaticFiles(directory=settings.STATIC_DIR), name='static')
 
     return application
 
