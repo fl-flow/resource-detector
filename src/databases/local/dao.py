@@ -2,6 +2,8 @@ import typing
 from datetime import datetime
 from decimal import Decimal
 
+from sqlalchemy import asc, desc
+
 from src.utils.date_and_time import str2datetime
 from .db import LocalSession
 from .models import SystemResInfo
@@ -30,10 +32,11 @@ def list_system_res_info(
         db: LocalSession,
         collected_at_gte: datetime = None,
         collected_at_lte: datetime = None,
+        order_by=asc(SystemResInfo.collected_at),
 ) -> typing.List[SystemResInfo]:
     queryset = db.query(SystemResInfo)
     if collected_at_gte:
         queryset = queryset.filter(SystemResInfo.collected_at >= collected_at_gte)
     if collected_at_lte:
         queryset = queryset.filter(SystemResInfo.collected_at <= collected_at_lte)
-    return queryset.all()
+    return queryset.order_by(order_by).all()
