@@ -53,3 +53,10 @@ def create_target_process(
         cmdline=cmdline,
     )
     return target_process.save(db)
+
+
+def retrieve_target_process(
+        db: LocalSession,
+        *filter_args,
+) -> typing.Optional[TargetProcess]:
+    return db.query(TargetProcess).filter(*filter_args).first()

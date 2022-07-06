@@ -1,10 +1,7 @@
-import sqlalchemy
 from sqlalchemy import (
     Column, Integer, String, DateTime,
-    DECIMAL,
+    DECIMAL, ForeignKey, JSON, SmallInteger,
     BigInteger,  # Sqlite doesn't allow BIGINT used as an primary key with autoincrement.
-    ForeignKey,
-    JSON,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -25,11 +22,17 @@ class SystemResInfo(CommonMixin, LocalBase):
 class TargetProcess(CommonMixin, DatetimeMixin, LocalBase):
     __tablename__ = 'target_process'
 
+    class StatusChoices:
+        monitoring = 1
+        stopped = 2
+        error = 3
+
     id = Column(Integer, primary_key=True)
     identify_id = Column(String(128), index=True)
     pid = Column(Integer)
     name = Column(String(128))
     cmdline = Column(JSON, comment='cmdline list')
+    status = Column(SmallInteger, default=StatusChoices.monitoring)
 
 
 class ProcessResInfo(CommonMixin, LocalBase):
