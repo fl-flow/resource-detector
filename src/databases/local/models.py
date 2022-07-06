@@ -1,7 +1,9 @@
 import sqlalchemy
 from sqlalchemy import (
     Column, Integer, String, DateTime,
-    DECIMAL, BigInteger, ForeignKey,
+    DECIMAL,
+    BigInteger,  # Sqlite doesn't allow BIGINT used as an primary key with autoincrement.
+    ForeignKey,
     JSON,
 )
 from sqlalchemy.orm import relationship, backref
@@ -13,7 +15,7 @@ from .db import LocalBase
 class SystemResInfo(CommonMixin, LocalBase):
     __tablename__ = 'system_res_info'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     collected_at = Column(DateTime, index=True)
     cpu_percent = Column(DECIMAL(8, 2))
     memory_used = Column(DECIMAL(16, 2), comment='MB')
@@ -23,7 +25,7 @@ class SystemResInfo(CommonMixin, LocalBase):
 class TargetProcess(CommonMixin, DatetimeMixin, LocalBase):
     __tablename__ = 'target_process'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     identify_id = Column(String(128), index=True)
     pid = Column(Integer)
     name = Column(String(128))
@@ -33,11 +35,11 @@ class TargetProcess(CommonMixin, DatetimeMixin, LocalBase):
 class ProcessResInfo(CommonMixin, LocalBase):
     __tablename__ = 'process_res_info'
 
-    id = Column(BigInteger, primary_key=True)
-    # target_process_id = Column(BigInteger, ForeignKey('target_process.id'))
+    id = Column(Integer, primary_key=True)
+    # target_process_id = Column(Integer, ForeignKey('target_process.id'))
     # target_process = relationship('TargetProcess', backref=backref('res_info_records'))
     # without constraint:
-    target_process_id = Column(BigInteger, index=True)
+    target_process_id = Column(Integer, index=True)
     target_process = relationship(
         'TargetProcess',
         foreign_keys=[target_process_id],

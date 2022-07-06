@@ -4,7 +4,6 @@ import _thread
 import uvicorn
 from loguru import logger
 
-from src.databases.local.models import TargetProcess, ProcessResInfo
 from src.settings.base import LOCAL_DATABASE_URL, DEBUG
 from src.databases.local.db import LocalBase
 from src.tasks.res_info import collect_host_machine_info_task

@@ -12,7 +12,7 @@ class CreateTargetProcessResModel(BaseModel):
     id: int
     identify_id: typing.Optional[str]
     pid: int
-    name: str
+    name: typing.Optional[str]
 
     class Config:
         orm_mode = True
