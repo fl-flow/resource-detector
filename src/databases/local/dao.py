@@ -6,7 +6,7 @@ from sqlalchemy import asc, desc
 
 from src.utils.date_and_time import str2datetime
 from .db import LocalSession
-from .models import SystemResInfo
+from .models import SystemResInfo, TargetProcess, ProcessResInfo
 
 
 def create_system_res_info(
@@ -22,10 +22,7 @@ def create_system_res_info(
         memory_used=Decimal(str(memory_used)),
         memory_percent=Decimal(str(memory_percent)),
     )
-    db.add(system_res_info)
-    db.commit()
-    db.refresh(system_res_info)
-    return system_res_info
+    return system_res_info.save(db)
 
 
 def list_system_res_info(
@@ -40,3 +37,19 @@ def list_system_res_info(
     if collected_at_lte:
         queryset = queryset.filter(SystemResInfo.collected_at <= collected_at_lte)
     return queryset.order_by(order_by).all()
+
+
+def create_target_process(
+        db: LocalSession,
+        identify_id=None,
+        pid=None,
+        name=None,
+        cmdline=None,
+):
+    target_process = TargetProcess(
+        identify_id=identify_id,
+        pid=pid,
+        name=name,
+        cmdline=cmdline,
+    )
+    return target_process.save(db)

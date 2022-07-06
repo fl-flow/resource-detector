@@ -4,6 +4,7 @@ import _thread
 import uvicorn
 from loguru import logger
 
+from src.databases.local.models import TargetProcess, ProcessResInfo
 from src.settings.base import LOCAL_DATABASE_URL, DEBUG
 from src.databases.local.db import LocalBase
 from src.tasks.res_info import collect_host_machine_info_task
@@ -18,6 +19,7 @@ logger.add('log/error.log', rotation='50 MB', retention=1, level='ERROR')
 def init_local_db():
     if not os.path.exists(LOCAL_DATABASE_URL):
         LocalBase.metadata.create_all()
+    LocalBase.metadata.create_all()
 
 
 def start_task():

@@ -6,7 +6,7 @@ from pydantic import BaseModel, validator
 from src.utils.typings import DisplayDatetime
 
 
-class SystemResInfoListResModel(BaseModel):
+class ListSystemResInfoResModel(BaseModel):
     id: int
     # collected_at: typing.Union[datetime, int]
     collected_at: DisplayDatetime

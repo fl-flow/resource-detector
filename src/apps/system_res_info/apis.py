@@ -7,12 +7,12 @@ from fastapi.encoders import jsonable_encoder
 from src.databases.local import dao
 from src.databases.local.db import LocalSession, get_local_db
 from src.utils.typings import WithoutTzDatetime
-from .schemas import SystemResInfoListResModel
+from .schemas import ListSystemResInfoResModel
 
 system_res_info_router = APIRouter()
 
 
-@system_res_info_router.get('/', response_model=typing.List[SystemResInfoListResModel])
+@system_res_info_router.get('/', response_model=typing.List[ListSystemResInfoResModel])
 def list_system_res_info(
         collected_at_gte: WithoutTzDatetime,
         collected_at_lte: WithoutTzDatetime,
