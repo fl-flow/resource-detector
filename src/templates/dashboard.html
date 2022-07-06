@@ -15,14 +15,10 @@
 <body>
 <div id="app">
     <!--    [[ message ]]-->
-</div>
-<div>
     <div id="systemResInfoChart" style="width: 640px;height:400px;"></div>
 </div>
 </body>
 <script>
-    var systemResInfoChart = echarts.init(document.getElementById('systemResInfoChart'));
-
     Vue.use(window['vue-dash-event'])
     const vue = new Vue({
         el: '#app',
@@ -33,8 +29,10 @@
             }
         },
         mounted() {
-            this.apiListSystemResInfo()
-            setInterval(() => this.apiListSystemResInfo(), 10000);
+            this.$nextTick(() => {
+                this.apiListSystemResInfo()
+                setInterval(() => this.apiListSystemResInfo(), 10000)
+            })
         },
         methods: {
             apiError(err) {
@@ -42,38 +40,19 @@
             },
             renderSystemResInfoChart(systemResInfoListData) {
                 let xAxisData = []
-                let cpuSeries = {
-                    data: [],
-                    name: 'cpu',
-                    type: 'line',
-                }
-                let memorySeries = {
-                    data: [],
-                    name: 'memory',
-                    type: 'line'
-                }
+                let cpuSeries = {data: [], name: 'cpu', type: 'line',}
+                let memorySeries = {data: [], name: 'memory', type: 'line'}
                 for (let item of systemResInfoListData) {
                     xAxisData.push(moment(item['collected_at'] * 1000).format('MM-DD HH:mm:ss'))
                     cpuSeries.data.push(item['cpu_percent'])
                     memorySeries.data.push(item['memory_percent'])
                 }
                 const option = {
-                    title: {
-                        text: '主机资源'
-                    },
-                    legend: {
-                        data: ['cpu', 'memory']
-                    },
-                    xAxis: {
-                        data: xAxisData
-                    },
-                    yAxis: {
-                        type: 'value'
-                    },
-                    series: [
-                        cpuSeries,
-                        memorySeries
-                    ]
+                    title: {text: '主机资源'},
+                    legend: {data: ['cpu', 'memory']},
+                    xAxis: {data: xAxisData},
+                    yAxis: {type: 'value'},
+                    series: [cpuSeries, memorySeries]
                 }
                 systemResInfoChart.setOption(option)
             },
@@ -81,10 +60,7 @@
                 collected_at_gte = collected_at_gte || moment().subtract(1, 'days').format('X')
                 collected_at_lte = collected_at_lte || moment().format('X')
                 axios.get('/api/system_res_info/', {
-                    params: {
-                        collected_at_gte,
-                        collected_at_lte
-                    }
+                    params: {collected_at_gte, collected_at_lte}
                 }).then(res => {
                     this.renderSystemResInfoChart(res.data)
                 }).catch(err => {
@@ -94,5 +70,8 @@
         },
         computed: {}
     })
+
+    var systemResInfoChart = echarts.init(document.getElementById('systemResInfoChart'))
+
 </script>
 </html>
