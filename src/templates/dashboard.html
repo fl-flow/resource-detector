@@ -14,29 +14,93 @@
 </head>
 <body>
 <div id="app">
+    <div style="display: flex; justify-content: space-around;">
+        <a-card title="Create target process" style="width: 580px;" :body-style="{ paddingBottom: 0 }">
+            <a-form :form="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }" @submit="handleCreateTargetProcess">
+                <a-form-item label="pid">
+                    <a-input
+                            placeholder="Please input pid"
+                            v-decorator="['pid', { rules: [{ required: true, message: 'Please input pid' }] }]"
+                    />
+                </a-form-item>
+                <a-form-item label="identify_id">
+                    <a-input
+                            v-decorator="['identify_id']"
+                            placeholder="Please input identify_id, e.g. task_id"
+                    />
+                </a-form-item>
+                <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
+                    <a-button type="primary" html-type="submit">
+                        Submit
+                    </a-button>
+                </a-form-item>
+            </a-form>
+        </a-card>
+        <a-card title="Monitoring target process list" style="width: 580px;" :body-style="{ padding: 0 }">
+            <a-button slot="extra" type="primary" icon="reload" @click="apiListTargetProcess()" size="small"></a-button>
+            <a-table :columns="columns" :data-source="targetProcessList" size="middle">
+                <span slot="action" slot-scope="text, record">
+                    <a-button @click="apiStopTargetProcess(record.pid, record.identify_id)" type="danger" size="small">Stop</a-button>
+                </span>
+            </a-table>
+        </a-card>
+    </div>
     <!--    [[ message ]]-->
-    <div id="systemResInfoChart" style="width: 640px;height:400px;"></div>
+    <div style="margin-top: 16px">
+        <div id="systemResInfoChart" style="width: 640px;height:400px;"></div>
+    </div>
 </div>
 </body>
 <script>
+    const TargetProcessStatusChoices = {
+        monitoring: 1,
+        stopped: 2,
+        error: 3,
+    }
+
     Vue.use(window['vue-dash-event'])
     const vue = new Vue({
         el: '#app',
         delimiters: ["[[", "]]"],
         data() {
             return {
-                message: 'Jinja2'
+                message: 'Jinja2',
+                form: this.$form.createForm(this, {name: 'coordinated'}),
+                targetProcessList: [],
+                columns: [
+                    {title: 'Pid', dataIndex: 'pid'},
+                    {title: 'IdentifyId', dataIndex: 'identify_id', ellipsis: true},
+                    {title: 'Name', dataIndex: 'name', ellipsis: true},
+                    {title: 'Cmdline', dataIndex: 'cmdline', ellipsis: true},
+                    {title: 'Action', key: 'action', scopedSlots: {customRender: 'action'}},
+                ],
+                targetProcessFilterStatus: TargetProcessStatusChoices.monitoring,
             }
         },
         mounted() {
             this.$nextTick(() => {
                 this.apiListSystemResInfo()
                 setInterval(() => this.apiListSystemResInfo(), 10000)
+                this.apiListTargetProcess(this.targetProcessFilterStatus)
             })
         },
         methods: {
+            handleCreateTargetProcess(e) {
+                e.preventDefault();
+                this.form.validateFields((err, values) => {
+                    if (!err) {
+                        const {pid, identify_id} = values
+                        this.apiCreateTargetProcess(pid, identify_id)
+                    }
+                });
+            },
             apiError(err) {
-                this.$message.error(`api error：${err}`)
+                const response = err.response
+                if (response && response.data?.detail) {
+                    this.$message.error(`api error：${response.data?.detail}`)
+                } else {
+                    this.$message.error(`api error：${err}`)
+                }
             },
             renderSystemResInfoChart(systemResInfoListData) {
                 let xAxisData = []
@@ -48,7 +112,7 @@
                     memorySeries.data.push(item['memory_percent'])
                 }
                 const option = {
-                    title: {text: '主机资源'},
+                    title: {text: 'Machine resource'},
                     legend: {data: ['cpu', 'memory']},
                     xAxis: {data: xAxisData},
                     yAxis: {type: 'value'},
@@ -66,7 +130,40 @@
                 }).catch(err => {
                     this.apiError(err)
                 })
-            }
+            },
+            apiCreateTargetProcess(pid, identify_id) {
+                axios.post('/api/process_res_info/target_process/', {
+                    pid, identify_id
+                }).then(res => {
+                    if (res.data.existed) {
+                        this.$message.success('Start an existing target process!')
+                    } else {
+                        this.$message.success('Create target process successed!')
+                    }
+                    this.apiListTargetProcess(this.targetProcessFilterStatus)
+                }).catch(err => {
+                    this.apiError(err)
+                })
+            },
+            apiListTargetProcess(status) {
+                axios.get('/api/process_res_info/target_process/', {
+                    params: {status: status || TargetProcessStatusChoices.monitoring}
+                }).then(res => {
+                    this.targetProcessList = res.data
+                }).catch(err => {
+                    this.apiError(err)
+                })
+            },
+            apiStopTargetProcess(pid, identify_id) {
+                axios.post('/api/process_res_info/stop_target_process/', {
+                    pid, identify_id
+                }).then(res => {
+                    this.$message.success('Stop target process successed!')
+                    this.apiListTargetProcess(this.targetProcessFilterStatus)
+                }).catch(err => {
+                    this.apiError(err)
+                })
+            },
         },
         computed: {}
     })
