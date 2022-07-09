@@ -6,7 +6,7 @@ SRC_DIR = BASE_DIR.joinpath('src')
 TEMPLATES_DIR = SRC_DIR.joinpath('templates')
 STATIC_DIR = SRC_DIR.joinpath('static')
 
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv('RESOURCE_DETECTOR_DEBUG', 'False').lower() == 'true'
 
 # REMOTE_DATABASE_USER = ''
 # REMOTE_DATABASE_PASSWORD = ''
