@@ -41,13 +41,15 @@
             <a-table :columns="columns" :data-source="targetProcessList" size="middle">
                 <span slot="action" slot-scope="text, record">
                     <a-button @click="apiStopTargetProcess(record.pid, record.identify_id)" type="danger" size="small">Stop</a-button>
+                    <a-button @click="updateMonitoringTargetProcessPid(record.pid)" type="primary" size="small" icon="line-chart"></a-button>
                 </span>
             </a-table>
         </a-card>
     </div>
     <!--    [[ message ]]-->
-    <div style="margin-top: 16px">
+    <div style="margin-top: 16px;display: flex; justify-content: space-around;">
         <div id="systemResInfoChart" style="width: 640px;height:400px;"></div>
+        <div id="targetProcessResInfoChart" style="width: 640px;height:400px;"></div>
     </div>
 </div>
 </body>
@@ -75,13 +77,15 @@
                     {title: 'Action', key: 'action', scopedSlots: {customRender: 'action'}},
                 ],
                 targetProcessFilterStatus: TargetProcessStatusChoices.monitoring,
+                monitoringTargetProcessPid: null,
             }
         },
         mounted() {
             this.$nextTick(() => {
                 this.apiListSystemResInfo()
                 setInterval(() => this.apiListSystemResInfo(), 10000)
-                this.apiListTargetProcess(this.targetProcessFilterStatus)
+                this.apiListTargetProcess(this.targetProcessFilterStatus, true)
+                setInterval(() => this.monitoringTargetProcess(), 10000)
             })
         },
         methods: {
@@ -120,6 +124,24 @@
                 }
                 systemResInfoChart.setOption(option)
             },
+            renderTargetProcessInfoChart(targetProcessResInfoListData) {
+                let xAxisData = []
+                let cpuSeries = {data: [], name: 'cpu', type: 'line',}
+                let memorySeries = {data: [], name: 'memory', type: 'line'}
+                for (let item of targetProcessResInfoListData) {
+                    xAxisData.push(moment(item['collected_at'] * 1000).format('MM-DD HH:mm:ss'))
+                    cpuSeries.data.push(item['cpu_percent'])
+                    memorySeries.data.push(item['memory_percent'])
+                }
+                const option = {
+                    title: {text: `Pid: ${this.monitoringTargetProcessPid}`},
+                    legend: {data: ['cpu', 'memory']},
+                    xAxis: {data: xAxisData},
+                    yAxis: {type: 'value'},
+                    series: [cpuSeries, memorySeries]
+                }
+                targetProcessResInfoChart.setOption(option)
+            },
             apiListSystemResInfo(collected_at_gte, collected_at_lte) {
                 collected_at_gte = collected_at_gte || moment().subtract(1, 'days').format('X')
                 collected_at_lte = collected_at_lte || moment().format('X')
@@ -145,11 +167,15 @@
                     this.apiError(err)
                 })
             },
-            apiListTargetProcess(status) {
+            apiListTargetProcess(status, needSetMonitoringTargetProcessPid) {
                 axios.get('/api/process_res_info/target_process/', {
                     params: {status: status || TargetProcessStatusChoices.monitoring}
                 }).then(res => {
                     this.targetProcessList = res.data
+                    if (needSetMonitoringTargetProcessPid && res.data.length > 0) {
+                        this.monitoringTargetProcessPid = res.data[0].pid
+                        this.monitoringTargetProcess()
+                    }
                 }).catch(err => {
                     this.apiError(err)
                 })
@@ -164,11 +190,32 @@
                     this.apiError(err)
                 })
             },
+            updateMonitoringTargetProcessPid(pid) {
+                this.monitoringTargetProcessPid = pid
+                this.monitoringTargetProcess()
+            },
+            monitoringTargetProcess() {
+                if (this.monitoringTargetProcessPid === null) {
+                    return
+                }
+                this.apiListTargetProcessInfo(null, null, this.monitoringTargetProcessPid)
+            },
+            apiListTargetProcessInfo(collected_at_gte, collected_at_lte, pid, identify_id) {
+                collected_at_gte = collected_at_gte || moment().subtract(1, 'days').format('X')
+                collected_at_lte = collected_at_lte || moment().format('X')
+                axios.get('/api/process_res_info/', {
+                    params: {collected_at_gte, collected_at_lte, pid, identify_id}
+                }).then(res => {
+                    this.renderTargetProcessInfoChart(res.data)
+                }).catch(err => {
+                    this.apiError(err)
+                })
+            },
         },
         computed: {}
     })
 
     var systemResInfoChart = echarts.init(document.getElementById('systemResInfoChart'))
-
+    var targetProcessResInfoChart = echarts.init(document.getElementById('targetProcessResInfoChart'))
 </script>
 </html>
