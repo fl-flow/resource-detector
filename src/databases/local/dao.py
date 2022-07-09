@@ -60,3 +60,33 @@ def retrieve_target_process(
         *filter_args,
 ) -> typing.Optional[TargetProcess]:
     return db.query(TargetProcess).filter(*filter_args).first()
+
+
+def list_process_res_info(
+        db: LocalSession,
+        collected_at_gte: datetime = None,
+        collected_at_lte: datetime = None,
+        identify_id: str = None,
+        pid: int = None,
+        order_by=asc(ProcessResInfo.collected_at),
+) -> typing.List[ProcessResInfo]:
+    queryset = db.query(
+        ProcessResInfo.id.label('id'),
+        ProcessResInfo.target_process_id.label('target_process_id'),
+        ProcessResInfo.collected_at.label('collected_at'),
+        ProcessResInfo.cpu_percent.label('cpu_percent'),
+        ProcessResInfo.memory_used.label('memory_used'),
+        ProcessResInfo.memory_percent.label('memory_percent'),
+        TargetProcess.identify_id.label('identify_id'),
+        TargetProcess.pid.label('pid'),
+        TargetProcess.name.label('name'),
+    ).join(TargetProcess, TargetProcess.id == ProcessResInfo.target_process_id)
+    if collected_at_gte:
+        queryset = queryset.filter(ProcessResInfo.collected_at >= collected_at_gte)
+    if collected_at_lte:
+        queryset = queryset.filter(ProcessResInfo.collected_at <= collected_at_lte)
+    if identify_id:
+        queryset = queryset.filter(TargetProcess.identify_id == identify_id)
+    if isinstance(pid, int):
+        queryset = queryset.filter(TargetProcess.pid == pid)
+    return queryset.order_by(order_by).all()

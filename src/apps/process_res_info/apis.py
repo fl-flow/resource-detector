@@ -9,10 +9,12 @@ from src.apps.process_res_info.schemas import (
     CreateTargetProcessReqModel, CreateTargetProcessResModel,
     ListTargetProcessResModel,
     StopTargetProcessReqModel, StopTargetProcessResModel,
+    list_process_res_info_req_params, ListProcessResInfoResModel,
 )
 from src.databases.local import dao
 from src.databases.local.db import LocalSession, get_local_db
 from src.databases.local.models import TargetProcess
+from src.utils.typings import WithoutTzDatetime
 
 process_res_info_router = APIRouter()
 
@@ -79,3 +81,12 @@ def stop_target_process(
         pid_update_count = queryset.filter(TargetProcess.pid == req_data.pid).update(update_data)
         db.commit()
     return {'pid_update_count': pid_update_count, 'identify_id_update_count': identify_id_update_count}
+
+
+@process_res_info_router.get('/', response_model=typing.List[ListProcessResInfoResModel])
+def list_process_res_info(
+        params=Depends(list_process_res_info_req_params),
+        db: LocalSession = Depends(get_local_db),
+):
+    data_list = dao.list_process_res_info(db, **params)
+    return data_list
