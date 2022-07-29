@@ -19,7 +19,7 @@ from src.utils.typings import WithoutTzDatetime
 process_res_info_router = APIRouter()
 
 
-@process_res_info_router.post('/target_process/', response_model=CreateTargetProcessResModel)
+@process_res_info_router.post('/target_process/', response_model=CreateTargetProcessResModel, summary='目标进程-开始采集信息')
 def create_target_process(
         req_data: CreateTargetProcessReqModel,
         db: LocalSession = Depends(get_local_db),
@@ -54,7 +54,7 @@ def create_target_process(
     return dao.create_target_process(db, **create_data)
 
 
-@process_res_info_router.get('/target_process/', response_model=typing.List[ListTargetProcessResModel])
+@process_res_info_router.get('/target_process/', response_model=typing.List[ListTargetProcessResModel], summary='目标进程-列表')
 def list_target_process(
         status: typing.Optional[int] = None,
         db: LocalSession = Depends(get_local_db),
@@ -65,7 +65,7 @@ def list_target_process(
     return queryset.order_by(desc(TargetProcess.updated_at)).all()
 
 
-@process_res_info_router.post('/stop_target_process/', response_model=StopTargetProcessResModel)
+@process_res_info_router.post('/stop_target_process/', response_model=StopTargetProcessResModel, summary='目标进程-停止采集信息')
 def stop_target_process(
         req_data: StopTargetProcessReqModel,
         db: LocalSession = Depends(get_local_db),
@@ -83,7 +83,7 @@ def stop_target_process(
     return {'pid_update_count': pid_update_count, 'identify_id_update_count': identify_id_update_count}
 
 
-@process_res_info_router.get('/', response_model=typing.List[ListProcessResInfoResModel])
+@process_res_info_router.get('/', response_model=typing.List[ListProcessResInfoResModel], summary='进程资源信息-列表')
 def list_process_res_info(
         params=Depends(list_process_res_info_req_params),
         db: LocalSession = Depends(get_local_db),

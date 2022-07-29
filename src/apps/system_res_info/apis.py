@@ -12,7 +12,7 @@ from .schemas import ListSystemResInfoResModel
 system_res_info_router = APIRouter()
 
 
-@system_res_info_router.get('/', response_model=typing.List[ListSystemResInfoResModel])
+@system_res_info_router.get('/', response_model=typing.List[ListSystemResInfoResModel], summary='系统资源信息-列表')
 def list_system_res_info(
         collected_at_gte: WithoutTzDatetime,
         collected_at_lte: WithoutTzDatetime,
